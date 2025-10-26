@@ -117,34 +117,37 @@ class Program
         int[] threadCounts = [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24];
         const int repeats = 100;
 
+        Console.WriteLine("Эталонное значение: {0}", Math.Sinh(x));
+
         foreach (double eps in epsilons)
         {
             Console.WriteLine("Точность: {0}", eps);
+            double seqRes = Sh(x, eps, out _);
             double seqTimeTotal = 0.0;
-            int terms = 0;
             for (int r = 0; r < repeats; r++)
             {
                 var sw = Stopwatch.StartNew();
-                double res = Sh(x, eps, out terms);
+                _ = Sh(x, eps, out _);
                 sw.Stop();
                 seqTimeTotal += sw.Elapsed.TotalMilliseconds;
             }
             double seqAvg = seqTimeTotal / repeats;
-            Console.WriteLine($"Последовательный: {seqAvg:F4} мс");
+            Console.WriteLine($"Последовательный: {seqAvg:F4} мс | res: {seqRes:F4}");
 
             foreach (int threads in threadCounts)
             {
+                double ParRes = ShParallel(x, eps, threads);
                 double parTimeTotal = 0.0;
                 for (int r = 0; r < repeats; r++)
                 {
                     var sw = Stopwatch.StartNew();
-                    double res = ShParallelNoLock(x, eps, threads);
+                    _ = ShParallel(x, eps, threads);
                     sw.Stop();
                     parTimeTotal += sw.Elapsed.TotalMilliseconds;
                 }
 
                 double parAvg = parTimeTotal / repeats;
-                Console.WriteLine($"Параллельный ({threads} потоков): {parAvg:F4} мс");
+                Console.WriteLine($"Параллельный ({threads} потоков): {parAvg:F4} мс | res: {ParRes:F4}");
             }
         }
     }
